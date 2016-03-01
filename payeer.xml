@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.5" type="plugin" group="crowdfundingpayment" method="upgrade">
+    <name>PLG_CROWDFUNDINGPAYMENT_PAYEER</name>
+    <author>Todor Iliev</author>
+    <copyright>Copyright (C) 2016 Todor Iliev ( ITPrism.com ). All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-3.0.en.html GNU/GPLv3</license>
+    <authorEmail>todor@itprism.com</authorEmail>
+    <authorUrl>http://itprism.com</authorUrl>
+    <version>1.0-beta</version>
+    <creationDate>10 March, 2016</creationDate>
+    <description><![CDATA[
+    <p>Crowdfunding Payment - Payeer is a plugin that provides ability for making payments via Payeer.</p>
+    <p><a href='http://itprism.com/' target='_blank'>Subscribe for the newsletter</a> to receive information about updates and new ITPrism extensions.</p>
+    <p>Please, <a href='http://extensions.joomla.org/extensions/extension/e-commerce/donations/crowdfunding' target='_blank'>vote for the extension</a> on Joomla! Extensions Directory</p>
+    ]]></description>
+    
+    <help url="PLG_CROWDFUNDINGPAYMENT_PAYEER_HELP_URL"/>
+    
+    <files>
+        <filename plugin="payeer">payeer.php</filename>
+
+        <folder>images</folder>
+        <folder>language</folder>
+    </files>
+    
+    <config>
+    
+		<fields name="params" addfieldpath="/administrator/components/com_crowdfunding/models/fields">
+			
+            <fieldset name="basic">
+    	        <field name="merchant_id"  type="text" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_MERCHANT_ID" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_MERCHANT_ID_DESC" required="true" />
+    	        <field name="merchant_url" type="text" default="https://payeer.com/merchant/" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_MERCHANT_URL" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_MERCHANT_URL_DESC" class="input-xxlarge" />
+    	        <field name="success_url" type="cfurl" default="index.php?option=com_crowdfunding&amp;task=payment.completeCheckout&amp;status=success&amp;format=raw&amp;payment_service=payeer" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_SUCCESS_URL" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_SUCCESS_URL_DESC" class="input-xxlarge" />
+    	        <field name="fail_url" type="cfurl" default="index.php?option=com_crowdfunding&amp;task=payment.completeCheckout&amp;status=fail&amp;format=raw&amp;payment_service=payeer" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_FAIL_URL" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_FAIL_URL_DESC" class="input-xxlarge" />
+    	        <field name="callback_url" type="cfurl" default="index.php?option=com_crowdfunding&amp;task=notifier.notify&amp;format=raw&amp;payment_service=payeer" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_CALLBACK_URL" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_CALLBACK_URL_DESC" class="input-xxlarge" />
+                <field name="secret_key"   type="text"
+                    label="PLG_CROWDFUNDINGPAYMENT_PAYEER_SECRET_KEY"
+                    description="PLG_CROWDFUNDINGPAYMENT_PAYEER_SECRET_KEY_DESC"
+                    required="true"
+                    fitler="trim"
+                />
+			</fieldset>
+	            
+            <fieldset name="emails" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_NOTIFICATION_EMAILS" addfieldpath="/administrator/components/com_emailtemplates/models/fields">
+                <field name="admin_mail_id" type="emailtemplate" default="0" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_SEND_MAIL_ADMIN" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_SEND_MAIL_ADMIN_DESC" class="btn-group" />
+                <field name="creator_mail_id" type="emailtemplate" default="0" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_SEND_MAIL_CREATOR" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_SEND_MAIL_CREATOR_DESC" class="btn-group" />
+                <field name="user_mail_id" type="emailtemplate" default="0" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_SEND_MAIL_USER" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_SEND_MAIL_USER_DESC" class="btn-group" />
+                
+                <field name="email_mode" type="list" default="html" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_EMAIL_MODE" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_EMAIL_MODE_DESC" >
+                   <option value="plain">PLG_CROWDFUNDINGPAYMENT_PAYEER_PLAIN</option>
+                   <option value="html">PLG_CROWDFUNDINGPAYMENT_PAYEER_HTML</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="advanced">
+                <field name="ip_filter" type="text" default="37.59.221.230" label="PLG_CROWDFUNDINGPAYMENT_PAYEER_IP_FILTER" description="PLG_CROWDFUNDINGPAYMENT_PAYEER_IP_FILTER_DESC" class="input-xxlarge" />
+            </fieldset>
+
+        </fields>
+        
+	</config>
+</extension>
