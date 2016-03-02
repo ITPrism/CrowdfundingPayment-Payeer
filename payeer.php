@@ -174,7 +174,7 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
         array_walk($ipFilter, 'JString::trim');
 
         $remoteAddress = $this->app->input->server->get('REMOTE_ADDR');
-        if (!in_array($remoteAddress, $ipFilter, true)) {
+        if (count($ipFilter) > 0 and !in_array($remoteAddress, $ipFilter, true)) {
             $this->log->add(
                 JText::_($this->textPrefix . '_ERROR_INVALID_REMOTE_ADDRESS'),
                 $this->debugType,
@@ -204,6 +204,9 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             $signHash = strtoupper(hash('sha256', implode(':', $arHash)));
         }
 
+        // DEBUG DATA
+        JDEBUG ? $this->log->add(JText::_($this->textPrefix . '_DEBUG_HASH'), $this->debugType, $signHash) : null;
+
         // Prepare the array that have to be returned by this method.
         $result = array(
             'project'          => null,
@@ -214,6 +217,9 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             'service_alias'    => $this->serviceAlias,
             'response'         => $this->serviceAlias
         );
+
+        // DEBUG DATA
+        JDEBUG ? $this->log->add('this->app->input->post->get->m_sign', $this->debugType, $this->app->input->post->get('m_sign')) : null;
 
         if ($this->app->input->post->get('m_sign') === $signHash and $this->app->input->post->get('m_status') === 'success') {
 
