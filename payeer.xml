@@ -6,7 +6,7 @@
     <license>http://www.gnu.org/licenses/gpl-3.0.en.html GNU/GPLv3</license>
     <authorEmail>todor@itprism.com</authorEmail>
     <authorUrl>http://itprism.com</authorUrl>
-    <version>1.0-beta2</version>
+    <version>1.0-beta3</version>
     <creationDate>10 March, 2016</creationDate>
     <description><![CDATA[
     <p>Crowdfunding Payment - Payeer is a plugin that provides ability for making payments via Payeer.</p>

@@ -33,7 +33,7 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
 
         $this->extraDataKeys   = array(
             'm_desc', 'm_orderid', 'm_amount', 'm_curr', 'm_status', 'm_shop', 'm_sign',
-            'm_operation_id', 'm_operation_ps', 'm_operation_date', 'm_operation_pay_date'
+            'm_operation_id', 'm_operation_ps', 'm_operation_date', 'm_operation_pay_date', 'summa_out', 'transfer_id'
         );
     }
 
@@ -184,29 +184,6 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             return null;
         };
 
-        $signHash = '';
-        if (array_key_exists('m_operation_id', $_POST) and array_key_exists('m_sign', $_POST)) {
-
-            $arHash = array(
-                $this->app->input->post->get('m_operation_id'),
-                $this->app->input->post->get('m_operation_ps'),
-                $this->app->input->post->get('m_operation_date'),
-                $this->app->input->post->get('m_operation_pay_date'),
-                $this->app->input->post->get('m_shop'),
-                $this->app->input->post->get('m_orderid'),
-                $this->app->input->post->get('m_amount'),
-                $this->app->input->post->get('m_curr'),
-                $this->app->input->post->get('m_desc'),
-                $this->app->input->post->get('m_status'),
-                $this->params->get('secret_key')
-            );
-
-            $signHash = strtoupper(hash('sha256', implode(':', $arHash)));
-        }
-
-        // DEBUG DATA
-        JDEBUG ? $this->log->add(JText::_($this->textPrefix . '_DEBUG_HASH'), $this->debugType, $signHash) : null;
-
         // Prepare the array that have to be returned by this method.
         $result = array(
             'project'          => null,
@@ -218,10 +195,30 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             'response'         => $this->serviceAlias
         );
 
-        // DEBUG DATA
-        JDEBUG ? $this->log->add('this->app->input->post->get->m_sign', $this->debugType, $this->app->input->post->get('m_sign')) : null;
+        $signHash = '';
+        if (array_key_exists('m_operation_id', $_POST) and array_key_exists('m_sign', $_POST)) {
 
-        if ($this->app->input->post->get('m_sign') === $signHash and $this->app->input->post->get('m_status') === 'success') {
+            $arHash = array(
+                $_POST['m_operation_id'],
+                $_POST['m_operation_ps'],
+                $_POST['m_operation_date'],
+                $_POST['m_operation_pay_date'],
+                $_POST['m_shop'],
+                $_POST['m_orderid'],
+                $_POST['m_amount'],
+                $_POST['m_curr'],
+                $_POST['m_desc'],
+                $_POST['m_status'],
+                $this->params->get('secret_key')
+            );
+
+            $signHash = JString::strtoupper(hash('sha256', implode(':', $arHash)));
+        }
+
+        // DEBUG DATA
+        JDEBUG ? $this->log->add(JText::_($this->textPrefix . '_DEBUG_HASH'), $this->debugType, $signHash) : null;
+
+        if ($_POST['m_sign'] === $signHash and $this->app->input->post->get('m_status') === 'success') {
 
             // Get currency
             $currency   = Crowdfunding\Currency::getInstance(JFactory::getDbo(), $params->get('project_currency'));
