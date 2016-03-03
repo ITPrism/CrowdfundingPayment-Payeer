@@ -391,9 +391,9 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             'reward_id'        => ($paymentSession->isAnonymous()) ? 0 : (int)$paymentSession->getRewardId(),
             'service_provider' => $this->serviceProvider,
             'service_alias'    => $this->serviceAlias,
-            'txn_id'           => Joomla\Utilities\ArrayHelper::getValue($data, 'm_orderid', null, 'string'),
-            'txn_amount'       => Joomla\Utilities\ArrayHelper::getValue($data, 'm_amount', null, 'float'),
-            'txn_currency'     => Joomla\Utilities\ArrayHelper::getValue($data, 'm_curr', null, 'string'),
+            'txn_id'           => $data['m_orderid'],
+            'txn_amount'       => $data['m_amount'],
+            'txn_currency'     => $data['m_curr'],
             'txn_status'       => $txnStatus,
             'txn_date'         => $date->toSql(),
             'extra_data'       => $this->prepareExtraData($data)
