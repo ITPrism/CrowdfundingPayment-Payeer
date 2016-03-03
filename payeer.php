@@ -413,7 +413,7 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
         }
 
         // Check currency
-        if (strcmp($transaction['m_curr'], $currencyCode) !== 0) {
+        if (strcmp($transaction['txn_currency'], $currencyCode) !== 0) {
 
             // Log data in the database
             $this->log->add(
