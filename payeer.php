@@ -382,9 +382,9 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
         // Check the status of checkout.
         $status = $this->app->input->getCmd('status');
         if (strcmp('success', $status) === 0) {
-            $redirectUrl = ($this->params->get('success_url')) ?: JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->getSlug(), $item->getCatSlug(), 'share'));
+            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->getSlug(), $item->getCatSlug(), 'share'));
         } else {
-            $redirectUrl = ($this->params->get('fail_url')) ?: JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->getSlug(), $item->getCatSlug()));
+            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->getSlug(), $item->getCatSlug()));
         }
 
         return array(
