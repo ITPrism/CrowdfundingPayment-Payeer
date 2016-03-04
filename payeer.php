@@ -321,7 +321,9 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             $result['response'] = $this->app->input->post->get('m_orderid') .'|error';
         }
 
-        return $result['response'] = $this->app->input->post->get('m_orderid') .'|success';
+        $result['response'] = $this->app->input->post->get('m_orderid') .'|success';
+
+        return $result;
     }
 
     /**
