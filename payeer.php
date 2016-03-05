@@ -360,31 +360,12 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             return null;
         }
 
-        $projectId = $this->app->getUserState('payments.pid');
-        if (!$projectId) {
-            return array(
-                'redirect_url' => JRoute::_(CrowdfundingHelperRoute::getDiscoverRoute())
-            );
-        }
-
-        $item = new Crowdfunding\Project(JFactory::getDbo());
-        $item->load($projectId, array(
-            'state'    => Prism\Constants::PUBLISHED,
-            'approved' => Prism\Constants::APPROVED
-        ));
-
-        if (!$item->getId()) {
-            return array(
-                'redirect_url' => JRoute::_(CrowdfundingHelperRoute::getDiscoverRoute())
-            );
-        }
-
         // Check the status of checkout.
         $status = $this->app->input->getCmd('status');
         if (strcmp('success', $status) === 0) {
-            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->getSlug(), $item->getCatSlug(), 'share'));
+            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->slug, $item->gcatslug, 'share'));
         } else {
-            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->getSlug(), $item->getCatSlug()));
+            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->slug, $item->gcatslug));
         }
 
         return array(
