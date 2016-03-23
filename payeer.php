@@ -3,7 +3,7 @@
  * @package      Crowdfunding
  * @subpackage   Plugins
  * @author       Todor Iliev
- * @copyright    Copyright (C) 2015 Todor Iliev <todor@itprism.com>. All rights reserved.
+ * @copyright    Copyright (C) 2016 Todor Iliev <todor@itprism.com>. All rights reserved.
  * @license      GNU General Public License version 3 or later; see LICENSE.txt
  */
 
@@ -32,7 +32,7 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
         $this->debugType .= '_' . \JString::strtoupper($this->serviceAlias);
 
         $this->extraDataKeys = array(
-            'm_desc', 'm_orderid', 'm_amount', 'm_curr', 'm_status', 'm_shop', 'm_sign',
+            'm_desc', 'm_orderid', 'm_amount', 'm_curr', 'm_status', 'm_shop', 'm_sign', 'payment_date',
             'm_operation_id', 'm_operation_ps', 'm_operation_date', 'm_operation_pay_date', 'summa_out', 'transfer_id'
         );
     }
@@ -193,7 +193,7 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             'payment_session'  => null,
             'service_provider' => $this->serviceProvider,
             'service_alias'    => $this->serviceAlias,
-            'response'         => $this->serviceAlias
+            'response'         => null
         );
 
         $signHash = '';
@@ -232,8 +232,13 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             // DEBUG DATA
             JDEBUG ? $this->log->add(JText::_($this->textPrefix . '_DEBUG_PAYMENT_SESSION'), $this->debugType, $paymentSession->getProperties()) : null;
 
-            // Validate transaction data
-            $validData = $this->validateData($_POST, $currency->getCode(), $paymentSession);
+            // Prepare valid transaction data.
+            $options = array(
+                'currency_code' => $currency->getCode(),
+                'timezone'      => $this->app->get('offset'),
+            );
+
+            $validData = $this->validateData($_POST, $paymentSession, $options);
             if ($validData === null) {
                 return $result;
             }
@@ -264,24 +269,41 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
             // Set the receiver of funds.
             $validData['receiver_id'] = $project->getUserId();
 
-            // Save transaction data.
-            // If it is not completed, return empty results.
-            // If it is complete, continue with process transaction data
-            $transactionData = $this->storeTransaction($validData, $project);
-            if ($transactionData === null) {
-                return $result;
-            }
+            $transactionData   = null;
+            $reward            = null;
 
-            // Update the number of distributed reward.
-            $rewardId = Joomla\Utilities\ArrayHelper::getValue($transactionData, 'reward_id', 0, 'int');
-            $reward   = null;
-            if ($rewardId > 0) {
-                $reward = $this->updateReward($transactionData);
+            // Start database transaction.
+            $db = JFactory::getDbo();
+            $db->transactionStart();
 
-                // Validate the reward.
-                if (!$reward) {
-                    $transactionData['reward_id'] = 0;
+            try {
+
+                // Save transaction data.
+                // If it is not completed, return empty results.
+                // If it is complete, continue with process transaction data
+                $transactionData = $this->storeTransaction($validData, $project);
+                if ($transactionData === null) {
+                    $db->transactionCommit();
+                    return $result;
                 }
+
+                // Update the number of distributed reward.
+                $rewardId = Joomla\Utilities\ArrayHelper::getValue($transactionData, 'reward_id', 0, 'int');
+                $reward   = null;
+                if ($rewardId > 0) {
+                    $reward = $this->updateReward($transactionData);
+
+                    // Validate the reward.
+                    if (!$reward) {
+                        $transactionData['reward_id'] = 0;
+                    }
+                }
+
+                $db->transactionCommit();
+
+            } catch (Exception $e) {
+                $db->transactionRollback();
+                return $result;
             }
 
             // Generate object of data, based on the transaction properties.
@@ -341,8 +363,6 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
      */
     public function onPaymentsCompleteCheckout($context, &$item, &$params)
     {
-        JDEBUG ? $this->log->add('context', $this->debugType, $context) : null;
-
         if (strcmp('com_crowdfunding.payments.completecheckout.' . $this->serviceAlias, $context) !== 0) {
             return null;
         }
@@ -363,9 +383,9 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
         // Check the status of checkout.
         $status = $this->app->input->getCmd('status');
         if (strcmp('success', $status) === 0) {
-            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->slug, $item->gcatslug, 'share'));
+            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->slug, $item->catslug, 'share'));
         } else {
-            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->slug, $item->gcatslug));
+            $redirectUrl = JRoute::_(CrowdfundingHelperRoute::getBackingRoute($item->slug, $item->catslug));
         }
 
         return array(
@@ -377,18 +397,17 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
      * Validate PayPal transaction.
      *
      * @param array                        $data
-     * @param string                       $currencyCode
      * @param Crowdfunding\Payment\Session $paymentSession
+     * @param array                        $options
      *
      * @return array
      */
-    protected function validateData($data, $currencyCode, $paymentSession)
+    protected function validateData($data, $paymentSession, $options)
     {
-        $txnDate = Joomla\Utilities\ArrayHelper::getValue($data, 'payment_date');
-        $date    = new JDate($txnDate);
+        $date      = new JDate('now', $options['timezone']);
 
         $txnStatus = JString::strtolower(Joomla\Utilities\ArrayHelper::getValue($data, 'm_status', null, 'string'));
-        $txnStatus = ($txnStatus === 'success') ? 'completed' : 'fail';
+        $txnStatus = ($txnStatus === 'success') ? 'completed' : 'failed';
 
         // Prepare transaction data
         $transaction = array(
@@ -419,13 +438,13 @@ class plgCrowdfundingPaymentPayeer extends Crowdfunding\Payment\Plugin
         }
 
         // Check currency
-        if (strcmp($transaction['txn_currency'], $currencyCode) !== 0) {
+        if (strcmp($transaction['txn_currency'], $options['currency_code']) !== 0) {
 
             // Log data in the database
             $this->log->add(
                 JText::_($this->textPrefix . '_ERROR_INVALID_TRANSACTION_CURRENCY'),
                 $this->debugType,
-                array('TRANSACTION DATA' => $transaction, 'CURRENCY' => $currencyCode)
+                array('TRANSACTION DATA' => $transaction, 'CURRENCY' => $options['currency_code'])
             );
 
             return null;
