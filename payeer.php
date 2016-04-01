@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 
 jimport('Prism.init');
 jimport('Crowdfunding.init');
-jimport('EmailTemplates.init');
+jimport('Emailtemplates.init');
 
 /**
  * Crowdfunding Payeer payment plugin.

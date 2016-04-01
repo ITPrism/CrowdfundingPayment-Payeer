@@ -1,6 +1,6 @@
 CrowdfundingPayment - Payeer
 ==================================
-( Version 1.0 )
+( Version 1.0-beta4 )
 - - -
 
 This is a payment plugin that provides functionality for making payments via Payeer.
